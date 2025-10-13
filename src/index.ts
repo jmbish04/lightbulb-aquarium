@@ -7,7 +7,7 @@
  * @module index
  */
 
-import { GitHubAPIClient, createGitHubClient } from './routes/github';
+import { GitHubAPIClient, createGitHubClient } from './routes/github.js';
 
 /**
  * Environment interface for Cloudflare Worker

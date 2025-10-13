@@ -1,13 +1,14 @@
 {
   "name": "lightbulb-aquarium",
   "version": "1.0.0",
+  "type": "module",
   "description": "Cloudflare Worker with GitHub API integration",
   "main": "src/index.ts",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run build && node dist/__tests__/types.test.js"
   },
   "keywords": ["cloudflare", "worker", "github", "api"],
   "author": "",
