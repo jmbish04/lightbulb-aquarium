@@ -1,0 +1,6 @@
+name = "lightbulb-aquarium"
+main = "src/index.ts"
+compatibility_date = "2024-10-01"
+
+# Environment variables (set these in Cloudflare dashboard or via secrets)
+# GITHUB_TOKEN = "your-github-token"
