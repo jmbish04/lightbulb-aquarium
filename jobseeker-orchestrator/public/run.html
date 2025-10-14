@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jobseeker Orchestrator - Run Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+    <script defer src="/assets/navbar.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-gray-900">Jobseeker Orchestrator</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-gray-900">New Run</a>
+                    <a href="/runs.html" class="text-gray-600 hover:text-gray-900">All Runs</a>
+                    <a href="/monitor.html" class="text-gray-600 hover:text-gray-900">Monitor</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <!-- Error Container -->
+        <div id="errorContainer" class="hidden"></div>
+        
+        <!-- Success Container -->
+        <div id="successContainer" class="hidden"></div>
+        
+        <!-- Loading Container -->
+        <div id="loadingContainer" class="hidden"></div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-600">Loading run details...</span>
+        </div>
+
+        <!-- Run Details -->
+        <div id="runDetails" class="hidden">
+            <!-- Header -->
+            <div class="bg-white shadow rounded-lg mb-6">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900" id="runTitle">Run Details</h1>
+                            <p class="text-sm text-gray-500" id="runId">Run ID: Loading...</p>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <span id="statusBadge" class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium">
+                                Loading...
+                            </span>
+                            <a href="/monitor.html?id=${runId}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm font-medium">
+                                Monitor Live
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white shadow rounded-lg">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
+                        <button onclick="showTab('overview')" id="overview-tab" class="tab-button py-4 px-1 border-b-2 border-blue-500 text-blue-600 font-medium text-sm">
+                            Overview
+                        </button>
+                        <button onclick="showTab('submissions')" id="submissions-tab" class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">
+                            Submissions
+                        </button>
+                        <button onclick="showTab('scores')" id="scores-tab" class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">
+                            Scores
+                        </button>
+                        <button onclick="showTab('deliverables')" id="deliverables-tab" class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium text-sm">
+                            Deliverables
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6">
+                    <!-- Overview Tab -->
+                    <div id="overview-content" class="tab-content">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Run Information</h3>
+                                <dl class="space-y-3">
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">Status</dt>
+                                        <dd id="runStatus" class="text-sm text-gray-900">Loading...</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">Created</dt>
+                                        <dd id="runCreated" class="text-sm text-gray-900">Loading...</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">Updated</dt>
+                                        <dd id="runUpdated" class="text-sm text-gray-900">Loading...</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-sm font-medium text-gray-500">Judge Model</dt>
+                                        <dd id="runJudgeModel" class="text-sm text-gray-900">Loading...</dd>
+                                    </div>
+                                </dl>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-4">Sections</h3>
+                                <div id="sectionsList" class="space-y-2">
+                                    <!-- Sections will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submissions Tab -->
+                    <div id="submissions-content" class="tab-content hidden">
+                        <div id="submissionsList">
+                            <!-- Submissions will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Scores Tab -->
+                    <div id="scores-content" class="tab-content hidden">
+                        <div id="scoresList">
+                            <!-- Scores will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Deliverables Tab -->
+                    <div id="deliverables-content" class="tab-content hidden">
+                        <div id="deliverablesList">
+                            <!-- Deliverables will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/client.js"></script>
+    <script>
+        let runId = null;
+        let runData = null;
+
+        // Get run ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        runId = urlParams.get('id');
+
+        if (!runId) {
+            Utils.showError('No run ID provided. Please select a run from the runs list.', null, 'errorContainer');
+        } else {
+            loadRunDetails();
+        }
+
+        async function loadRunDetails() {
+            try {
+                Utils.showLoading('Loading run details...', 'loadingContainer');
+                
+                const response = await API.get(`/evals/${runId}`);
+                runData = response;
+                
+                document.getElementById('loadingState').classList.add('hidden');
+                Utils.hideLoading('loadingContainer');
+                document.getElementById('runDetails').classList.remove('hidden');
+                
+                renderRunDetails();
+            } catch (error) {
+                console.error('Error loading run details:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                Utils.hideLoading('loadingContainer');
+                
+                if (error instanceof APIError) {
+                    if (error.code === 404) {
+                        Utils.showError('Run not found. The run may have been deleted or the ID is incorrect.', error.details, 'errorContainer');
+                    } else {
+                        Utils.showError(error.message, error.details, 'errorContainer');
+                    }
+                } else {
+                    Utils.showError('Failed to load run details. Please try again.', error.message, 'errorContainer');
+                }
+            }
+        }
+
+        function renderRunDetails() {
+            const eval = runData.eval;
+            
+            if (!eval) {
+                Utils.showError('Invalid run data received from server.', null, 'errorContainer');
+                return;
+            }
+            
+            // Update header
+            document.getElementById('runTitle').textContent = eval.project_id || eval.id;
+            document.getElementById('runId').textContent = `Run ID: ${eval.id}`;
+            
+            // Update status
+            const statusBadge = document.getElementById('statusBadge');
+            const statusColor = getStatusColor(eval.status);
+            statusBadge.className = `inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColor}`;
+            statusBadge.textContent = getStatusText(eval.status);
+            
+            // Update overview
+            document.getElementById('runStatus').textContent = getStatusText(eval.status);
+            document.getElementById('runCreated').textContent = new Date(eval.created_at).toLocaleString();
+            document.getElementById('runUpdated').textContent = new Date(eval.updated_at).toLocaleString();
+            document.getElementById('runJudgeModel').textContent = eval.judge_model || 'Default';
+            
+            // Update sections
+            try {
+                const sections = JSON.parse(eval.sections || '[]');
+                const sectionsList = document.getElementById('sectionsList');
+                sectionsList.innerHTML = sections.map(section => 
+                    `<div class="flex items-center">
+                        <svg class="h-5 w-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="text-sm text-gray-900">${section}</span>
+                    </div>`
+                ).join('');
+            } catch (error) {
+                console.error('Error parsing sections:', error);
+                document.getElementById('sectionsList').innerHTML = '<p class="text-sm text-gray-500">Unable to load sections</p>';
+            }
+            
+            // Render submissions
+            renderSubmissions(runData.submissions || []);
+            renderScores(runData.scores || []);
+            renderDeliverables(runData.deliverables || []);
+        }
+
+        function renderSubmissions(submissions) {
+            const container = document.getElementById('submissionsList');
+            
+            if (submissions.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No submissions yet</p>';
+                return;
+            }
+            
+            // Group by section
+            const grouped = submissions.reduce((acc, sub) => {
+                if (!acc[sub.section]) acc[sub.section] = [];
+                acc[sub.section].push(sub);
+                return acc;
+            }, {});
+            
+            container.innerHTML = Object.entries(grouped).map(([section, subs]) => `
+                <div class="mb-8">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">${section}</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${subs.map(sub => `
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-sm font-medium text-gray-900">${sub.provider}</span>
+                                    <span class="text-xs text-gray-500">${new Date(sub.created_at).toLocaleString()}</span>
+                                </div>
+                                <div class="text-sm text-gray-600 max-h-32 overflow-y-auto">
+                                    ${sub.content ? sub.content.substring(0, 200) + '...' : 'Content stored in R2'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderScores(scores) {
+            const container = document.getElementById('scoresList');
+            
+            if (scores.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No scores yet</p>';
+                return;
+            }
+            
+            container.innerHTML = scores.map(score => `
+                <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-lg font-medium text-gray-900">${score.section}</h4>
+                        <span class="text-sm font-medium text-green-600">Winner: ${score.winner_provider}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-2">
+                        ${score.rationale || 'No rationale provided'}
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        Scores: ${JSON.stringify(JSON.parse(score.scores_json || '{}'))}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDeliverables(deliverables) {
+            const container = document.getElementById('deliverablesList');
+            
+            if (deliverables.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-8">No deliverables yet</p>';
+                return;
+            }
+            
+            container.innerHTML = deliverables.map(deliverable => `
+                <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-lg font-medium text-gray-900">${deliverable.section}</h4>
+                        <span class="text-sm text-gray-500">Provider: ${deliverable.provider}</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-2">
+                        R2 Key: ${deliverable.r2_key}
+                    </div>
+                    <a href="/deliverables/${deliverable.r2_key}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">
+                        View Deliverable →
+                    </a>
+                </div>
+            `).join('');
+        }
+
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Remove active state from all tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab content
+            document.getElementById(`${tabName}-content`).classList.remove('hidden');
+            
+            // Activate selected tab button
+            const activeButton = document.getElementById(`${tabName}-tab`);
+            activeButton.classList.remove('border-transparent', 'text-gray-500');
+            activeButton.classList.add('border-blue-500', 'text-blue-600');
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'completed':
+                    return 'bg-green-100 text-green-800';
+                case 'running':
+                    return 'bg-blue-100 text-blue-800';
+                case 'error':
+                    return 'bg-red-100 text-red-800';
+                case 'queued':
+                    return 'bg-yellow-100 text-yellow-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'completed':
+                    return 'Completed';
+                case 'running':
+                    return 'Running';
+                case 'error':
+                    return 'Error';
+                case 'queued':
+                    return 'Queued';
+                default:
+                    return 'Unknown';
+            }
+        }
+    </script>
+</body>
+</html>
