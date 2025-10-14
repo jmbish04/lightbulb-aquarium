@@ -1,0 +1,23 @@
+{
+  "name": "jobseeker-orchestrator",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "migrate": "wrangler d1 migrations apply DB --local"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "@cloudflare/workers-types": "^4.20251004.0",
+    "wrangler": "^3.85.0"
+  },
+  "dependencies": {
+    "ai": "^3.1.0",
+    "@ai-sdk/openai": "^0.0.54",
+    "@ai-sdk/anthropic": "^0.0.50",
+    "@ai-sdk/google": "^0.0.29"
+  }
+}
