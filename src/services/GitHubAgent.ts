@@ -11,11 +11,11 @@ class McpAgent extends DurableObject {
 import { D1Tool } from '../tools/D1Tool';
 // In a real implementation, this would be the real GitHubTool
 class MockGitHubTool {
-    async forkAndPlan(params) { console.log("Forking and planning...", params); return { success: true, plan: "1. Create new branch. 2. Implement feature. 3. Push changes." }; }
-    async createPrFromTask(params) { console.log("Creating PR from task...", params); return { success: true, pr_url: "https://github.com/example/repo/pull/123" }; }
-    async resolvePrConflict(params) { console.log("Resolving PR conflict...", params); return { success: true, resolution: "Conflict resolved by accepting incoming changes." }; }
-    async resolveWorkerBuildIssue(params) { console.log("Resolving worker build issue...", params); return { success: true, fix: "Added missing dependency to package.json." }; }
-    async startGithubResearch(params) { console.log("Starting GitHub research...", params); return { success: true, brief_id: "research-abc-123" }; }
+    async forkAndPlan(params: { repoUrl: string, taskDescription: string }) { console.log("Forking and planning...", params); return { success: true, plan: "1. Create new branch. 2. Implement feature. 3. Push changes." }; }
+    async createPrFromTask(params: { project_id: string, task_id: string }) { console.log("Creating PR from task...", params); return { success: true, pr_url: "https://github.com/example/repo/pull/123" }; }
+    async resolvePrConflict(params: { pr_url: string, strategy: 'ours' | 'theirs' | 'custom' }) { console.log("Resolving PR conflict...", params); return { success: true, resolution: "Conflict resolved by accepting incoming changes." }; }
+    async resolveWorkerBuildIssue(params: { build_log_url: string }) { console.log("Resolving worker build issue...", params); return { success: true, fix: "Added missing dependency to package.json." }; }
+    async startGithubResearch(params: { topic: string, repos: string[] }) { console.log("Starting GitHub research...", params); return { success: true, brief_id: "research-abc-123" }; }
 }
 
 
