@@ -20,14 +20,6 @@ CREATE TABLE development_projects (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE development_project_plans (
-    id TEXT PRIMARY KEY,
-    project_id TEXT NOT NULL,
-    plan TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (project_id) REFERENCES development_projects(id)
-);
-
 CREATE TABLE development_consultations (
     id TEXT PRIMARY KEY,
     project_id TEXT NOT NULL,
