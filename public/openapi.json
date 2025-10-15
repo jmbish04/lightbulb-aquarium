@@ -1,0 +1,15 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "AI Agent Platform API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Main WebSocket endpoint for the DynamicAgent",
+        "description": "Upgrades the connection to a WebSocket to interact with the main orchestrator agent."
+      }
+    }
+  }
+}
