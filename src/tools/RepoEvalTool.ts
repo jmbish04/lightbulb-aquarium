@@ -48,15 +48,16 @@ export class RepoEvalTool {
             'Dockerfile',
         ];
 
-        const results = {};
-        const checkPromises = checks.map(async (file) => {
+        const checkPromises = checks.map(async (file): Promise<[string, string]> => {
             try {
                 const content = await this.githubTool.get_file_contents({ owner, repo, path: file });
-                results[file] = content ? 'found' : 'missing';
+                return [file, content ? 'found' : 'missing'];
             } catch (e) {
-                results[file] = 'error';
+                return [file, 'error'];
             }
         });
+
+        const results = Object.fromEntries(await Promise.all(checkPromises));
 
         await Promise.all(checkPromises);
 
