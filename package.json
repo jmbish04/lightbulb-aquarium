@@ -1,0 +1,21 @@
+{
+  "name": "lightbulb-aquarium",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Cloudflare Worker with GitHub API integration",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "tsc",
+    "test": "npm run build && node dist/__tests__/types.test.js"
+  },
+  "keywords": ["cloudflare", "worker", "github", "api"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251011.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.42.2"
+  }
+}
