@@ -1,0 +1,16 @@
+name = "github-mcp-worker"
+main = "src/worker.ts"
+compatibility_date = "2024-07-25"
+
+# [vars]
+# GITHUB_TOKEN = "your_github_token_here" # Set this with `npx wrangler secret put GITHUB_TOKEN`
+# ALLOWED_ORIGINS = "http://localhost:3000,https://your-app.com"
+
+kv_namespaces = [
+  { binding = "MCP_LOGS", id = "your_kv_namespace_id_for_logs", preview_id = "your_kv_preview_id" }
+]
+
+[[r2_buckets]]
+binding = "MCP_ARTIFACTS"
+bucket_name = "mcp-artifacts-bucket"
+preview_bucket_name = "preview-mcp-artifacts-bucket"
