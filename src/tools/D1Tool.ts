@@ -56,4 +56,24 @@ export class D1Tool {
             throw new Error(`D1 query failed: ${error.message}`);
         }
     }
+
+    /**
+     * @description Applies the initial database schema. This is a powerful, one-time operation.
+     * @param {string} database_binding - The name of the D1 binding.
+     * @returns {Promise<any>} The result of the batch operation.
+     */
+    async init_schema(database_binding: string): Promise<any> {
+        const db = this.getDb(database_binding);
+        const schema = `
+            CREATE TABLE best_practices ( id TEXT PRIMARY KEY, topic TEXT NOT NULL, guidance TEXT NOT NULL, source TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
+            CREATE TABLE development_projects ( id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT, github_url TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
+            CREATE TABLE development_consultations ( id TEXT PRIMARY KEY, project_id TEXT NOT NULL, question TEXT NOT NULL, context TEXT, agent_response TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (project_id) REFERENCES development_projects(id) );
+            CREATE TABLE error_consultations ( id TEXT PRIMARY KEY, error_message TEXT NOT NULL, stack_trace TEXT, code_snippet TEXT, analysis TEXT, suggested_fix TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
+            CREATE TABLE research_briefs ( id TEXT PRIMARY KEY, topic TEXT NOT NULL, summary TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
+            CREATE TABLE research_repos_reviewed ( id TEXT PRIMARY KEY, brief_id TEXT NOT NULL, repo_url TEXT NOT NULL, review_notes TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (brief_id) REFERENCES research_briefs(id) );
+            CREATE TABLE research_findings ( id TEXT PRIMARY KEY, brief_id TEXT NOT NULL, finding TEXT NOT NULL, source_repo_id TEXT, source_file_path TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (brief_id) REFERENCES research_briefs(id), FOREIGN KEY (source_repo_id) REFERENCES research_repos_reviewed(id) );
+        `;
+        const statements = schema.trim().split(';').filter(s => s.trim().length > 0).map(s => db.prepare(s));
+        return await db.batch(statements);
+    }
 }
