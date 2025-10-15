@@ -63,6 +63,20 @@ class GitHubClient {
   createFork(params: { owner: string; repo: string; }) {
       return this.req(`/repos/${params.owner}/${params.repo}/forks`, { method: 'POST' });
   }
+
+  searchRepositories(params: { q: string; sort?: string; order?: string; per_page?: number; }) {
+      const query = new URLSearchParams({
+          q: params.q,
+          sort: params.sort ?? 'stars',
+          order: params.order ?? 'desc',
+          per_page: String(params.per_page ?? 5)
+      });
+      return this.req(`/search/repositories?${query.toString()}`);
+  }
+
+  getRepository(params: { owner: string; repo: string }) {
+      return this.req(`/repos/${params.owner}/${params.repo}`);
+  }
 }
 
 interface Env { GITHUB_TOKEN?: string; }
@@ -102,5 +116,15 @@ export class GitHubTool {
     async fork_repository(params: { owner: string; repo: string; token?: string }) {
         const gh = this.getClient(params);
         return gh.createFork(params);
+    }
+
+    async search_repositories(params: { query: string; sort?: string; order?: 'asc' | 'desc'; per_page?: number; token?: string }) {
+        const gh = this.getClient(params);
+        return gh.searchRepositories({ q: params.query, sort: params.sort, order: params.order, per_page: params.per_page });
+    }
+
+    async get_repository(params: { owner: string; repo: string; token?: string }) {
+        const gh = this.getClient(params);
+        return gh.getRepository(params);
     }
 }

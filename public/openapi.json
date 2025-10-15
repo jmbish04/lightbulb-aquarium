@@ -2,20 +2,20 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Cloudflare AI Agent Platform API",
-    "description": "This API provides a single WebSocket endpoint to interact with the DynamicAgent, which in turn orchestrates tasks across a suite of specialist agents (GitHub, Debugger, BestPractices).",
+    "description": "Interact with the DynamicAgent via WebSockets and trigger high-level workflows that coordinate the specialist Durable Object agents.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "wss://your-worker-url.workers.dev",
-      "description": "Production WebSocket endpoint"
+      "url": "https://your-worker-url.workers.dev",
+      "description": "Production endpoint"
     }
   ],
   "paths": {
     "/": {
       "get": {
         "summary": "Establish a WebSocket connection",
-        "description": "Upgrades the HTTP connection to a WebSocket to begin interacting with the DynamicAgent. All subsequent communication occurs over this WebSocket.",
+        "description": "Upgrades the connection to a WebSocket bound to the DynamicAgent. Client messages must conform to the ClientMessage schema.",
         "responses": {
           "101": {
             "description": "Switching Protocols. The connection is now a WebSocket."
@@ -25,28 +25,404 @@
           }
         }
       }
+    },
+    "/api/github/fork-plan": {
+      "post": {
+        "summary": "Fork a repository and generate a delivery plan",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForkPlanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workflow completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForkPlanResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/create-pr": {
+      "post": {
+        "summary": "Generate implementation guidance for a project task",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePrRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Guidance generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePrResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/github/research": {
+      "post": {
+        "summary": "Start a GitHub research brief",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Research brief completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/init-db": {
+      "post": {
+        "summary": "Apply the D1 schema from schema.sql",
+        "responses": {
+          "200": {
+            "description": "Schema applied"
+          }
+        }
+      }
+    },
+    "/api/memory/projects": {
+      "get": {
+        "summary": "List stored development projects",
+        "responses": {
+          "200": {
+            "description": "Projects returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/memory/errors": {
+      "get": {
+        "summary": "List debugging consultations",
+        "responses": {
+          "200": {
+            "description": "Consultations returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/memory/research": {
+      "get": {
+        "summary": "List research briefs",
+        "responses": {
+          "200": {
+            "description": "Briefs returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResearchBriefsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
-      "schemas": {
-          "ClientMessage": {
-              "type": "object",
-              "properties": {
-                  "agent": {"type": "string", "enum": ["GITHUB_AGENT", "DEBUGGER_AGENT", "BEST_PRACTICES_AGENT"]},
-                  "tool": {"type": "string", "description": "The name of the tool to invoke on the specialist agent."},
-                  "params": {"type": "object", "description": "An object containing the parameters for the tool."}
-              },
-              "required": ["agent", "tool", "params"]
+    "schemas": {
+      "ClientMessage": {
+        "type": "object",
+        "properties": {
+          "agent": {
+            "type": "string",
+            "enum": [
+              "GITHUB_AGENT",
+              "DEBUGGER_AGENT",
+              "BEST_PRACTICES_AGENT"
+            ]
           },
-          "ServerMessage": {
+          "tool": {
+            "type": "string",
+            "description": "The name of the tool to invoke on the specialist agent."
+          },
+          "params": {
+            "type": "object",
+            "description": "An object containing the parameters for the tool."
+          }
+        },
+        "required": [
+          "agent",
+          "tool",
+          "params"
+        ]
+      },
+      "ServerMessage": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "status",
+              "result",
+              "error"
+            ]
+          },
+          "message": {
+            "type": "string"
+          },
+          "tool": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object"
+          }
+        }
+      },
+      "ForkPlanRequest": {
+        "type": "object",
+        "properties": {
+          "repoUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "taskDescription": {
+            "type": "string"
+          },
+          "newRepoName": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string",
+            "description": "Optional GitHub token override"
+          }
+        },
+        "required": [
+          "repoUrl",
+          "taskDescription",
+          "newRepoName"
+        ]
+      },
+      "ForkPlanResponse": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "newRepoUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/StructuredPlan"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "StructuredPlan": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "milestones": {
+            "type": "array",
+            "items": {
               "type": "object",
               "properties": {
-                  "type": {"type": "string", "enum": ["status", "result", "error"]},
-                  "message": {"type": "string", "description": "A status update or error message."},
-                  "tool": {"type": "string", "description": "The tool that produced the result."},
-                  "result": {"type": "object", "description": "The JSON result from the tool invocation."}
+                "title": {
+                  "type": "string"
+                },
+                "goal": {
+                  "type": "string"
+                },
+                "tasks": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "estimated_hours": {
+                  "type": "number"
+                }
               }
+            }
+          },
+          "risk_register": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "risk": {
+                  "type": "string"
+                },
+                "mitigation": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "success_metrics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
+        }
+      },
+      "CreatePrRequest": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "taskDescription": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "taskDescription"
+        ]
+      },
+      "CreatePrResponse": {
+        "type": "object",
+        "properties": {
+          "project": {
+            "type": "object"
+          },
+          "plan": {
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "ResearchRequest": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string"
+          },
+          "seedRepos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "maxRepos": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic"
+        ]
+      },
+      "ResearchResponse": {
+        "type": "object",
+        "properties": {
+          "briefId": {
+            "type": "string"
+          },
+          "topic": {
+            "type": "string"
+          },
+          "overview": {
+            "type": "object"
+          },
+          "repositories": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "ProjectsResponse": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "ErrorsResponse": {
+        "type": "object",
+        "properties": {
+          "consultations": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "ResearchBriefsResponse": {
+        "type": "object",
+        "properties": {
+          "briefs": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
       }
+    }
   }
 }
