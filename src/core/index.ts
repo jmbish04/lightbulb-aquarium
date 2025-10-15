@@ -69,7 +69,7 @@ export default {
                 }
 
                 if (request.method === 'POST' && url.pathname === '/api/admin/init-db') {
-                    const d1 = new D1Tool(env as any);
+const d1 = new D1Tool({ DB: env.DB });
                     await d1.init_schema('DB');
                     return jsonResponse({ success: true });
                 }
