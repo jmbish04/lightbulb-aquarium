@@ -376,11 +376,12 @@ export class GitHubAPIClient {
 
       clearTimeout(timeoutId);
 
-      const data = await response.json() as T;
+      const text = await response.text();
+      const data = text ? (JSON.parse(text) as T) : (null as T);
 
       if (!response.ok) {
         throw new Error(
-          `GitHub API error: ${response.status} ${response.statusText} - ${JSON.stringify(data)}`
+          `GitHub API error: ${response.status} ${response.statusText} - ${text}`
         );
       }
 
