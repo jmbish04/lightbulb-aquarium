@@ -730,7 +730,7 @@ export class GitHubAPIClient {
    * // Get a file
    * const file = await client.getContents('octocat', 'Hello-World', 'README.md');
    * if ('content' in file) {
-   *   const content = Buffer.from(file.content, 'base64').toString('utf-8');
+   *   const content = atob(file.content);
    * }
    * 
    * // Get a directory
