@@ -106,6 +106,92 @@ const d1 = new D1Tool({ DB: env.DB });
                     return jsonResponse({ briefs: results ?? [] });
                 }
 
+                if (request.method === 'GET' && url.pathname === '/api/memory/best-practices') {
+                    const d1 = new D1Tool(env as any);
+                    const { results } = await d1.query('DB', `
+                        SELECT * FROM best_practices
+                        ORDER BY created_at DESC
+                        LIMIT 50
+                    `);
+                    return jsonResponse({ bestPractices: results ?? [] });
+                }
+
+                if (request.method === 'POST' && url.pathname === '/api/memory/best-practices') {
+                    const body = await request.json();
+                    const topic = typeof body.topic === 'string' ? body.topic.trim() : '';
+                    const guidance = typeof body.guidance === 'string' ? body.guidance.trim() : '';
+                    const source = typeof body.source === 'string' ? body.source.trim() : undefined;
+
+                    if (!topic || !guidance) {
+                        return jsonResponse({ error: 'Topic and guidance are required.' }, 400);
+                    }
+
+                    const d1 = new D1Tool(env as any);
+                    const bestPractice = {
+                        id: crypto.randomUUID(),
+                        topic,
+                        guidance,
+                        source: source || null
+                    };
+                    await d1.insert('DB', 'best_practices', bestPractice);
+                    const { results } = await d1.query('DB', `
+                        SELECT * FROM best_practices WHERE id = ? LIMIT 1
+                    `, [bestPractice.id]);
+                    return jsonResponse({ bestPractice: results && results.length > 0 ? results[0] : bestPractice });
+                }
+
+                if (request.method === 'PUT' && url.pathname.startsWith('/api/memory/best-practices/')) {
+                    const id = url.pathname.split('/').pop() || '';
+                    if (!id) {
+                        return jsonResponse({ error: 'Best practice ID is required.' }, 400);
+                    }
+
+                    const body = await request.json();
+                    const updates: Record<string, any> = {};
+
+                    if (typeof body.topic === 'string') {
+                        const topic = body.topic.trim();
+                        if (topic) {
+                            updates.topic = topic;
+                        }
+                    }
+                    if (typeof body.guidance === 'string') {
+                        const guidance = body.guidance.trim();
+                        if (guidance) {
+                            updates.guidance = guidance;
+                        }
+                    }
+                    if (typeof body.source === 'string') {
+                        const source = body.source.trim();
+                        updates.source = source || null;
+                    }
+
+                    if (Object.keys(updates).length === 0) {
+                        return jsonResponse({ error: 'No fields provided for update.' }, 400);
+                    }
+
+                    const d1 = new D1Tool(env as any);
+                    await d1.update('DB', 'best_practices', 'id', id, updates);
+                    const { results } = await d1.query('DB', `
+                        SELECT * FROM best_practices WHERE id = ? LIMIT 1
+                    `, [id]);
+                    if (!results || results.length === 0) {
+                        return jsonResponse({ error: 'Best practice not found.' }, 404);
+                    }
+                    return jsonResponse({ bestPractice: results[0] });
+                }
+
+                if (request.method === 'DELETE' && url.pathname.startsWith('/api/memory/best-practices/')) {
+                    const id = url.pathname.split('/').pop() || '';
+                    if (!id) {
+                        return jsonResponse({ error: 'Best practice ID is required.' }, 400);
+                    }
+
+                    const d1 = new D1Tool(env as any);
+                    await d1.query('DB', `DELETE FROM best_practices WHERE id = ?`, [id]);
+                    return jsonResponse({ success: true });
+                }
+
                 return jsonResponse({ error: 'Not Found' }, 404);
             } catch (error) {
                 console.error('API request failed', error);

@@ -115,7 +115,17 @@
                 data.plan.risk_register.forEach((entry) => {
                     const li = document.createElement('li');
                     li.className = 'p-3 rounded border border-amber-300 bg-amber-50 dark:bg-amber-900/40 dark:border-amber-700';
-                    li.innerHTML = `<strong class="block text-amber-800 dark:text-amber-300">${entry.risk}</strong><span class="text-sm text-amber-700 dark:text-amber-200">Mitigation: ${entry.mitigation}</span>`;
+
+                    const riskTitle = document.createElement('strong');
+                    riskTitle.className = 'block text-amber-800 dark:text-amber-300';
+                    riskTitle.textContent = entry.risk;
+                    li.appendChild(riskTitle);
+
+                    const mitigation = document.createElement('span');
+                    mitigation.className = 'text-sm text-amber-700 dark:text-amber-200';
+                    mitigation.textContent = `Mitigation: ${entry.mitigation}`;
+                    li.appendChild(mitigation);
+
                     riskList.appendChild(li);
                 });
 
@@ -126,12 +136,22 @@
             if (Array.isArray(data.plan?.success_metrics) && data.plan.success_metrics.length > 0) {
                 const metrics = document.createElement('div');
                 metrics.className = 'mt-6';
-                metrics.innerHTML = `
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Success Metrics</h3>
-                    <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-200 space-y-1">
-                        ${data.plan.success_metrics.map((metric) => `<li>${metric}</li>`).join('')}
-                    </ul>
-                `;
+
+                const metricsTitle = document.createElement('h3');
+                metricsTitle.className = 'text-lg font-semibold text-gray-900 dark:text-white mb-2';
+                metricsTitle.textContent = 'Success Metrics';
+                metrics.appendChild(metricsTitle);
+
+                const metricList = document.createElement('ul');
+                metricList.className = 'list-disc list-inside text-sm text-gray-700 dark:text-gray-200 space-y-1';
+
+                data.plan.success_metrics.forEach((metric) => {
+                    const metricItem = document.createElement('li');
+                    metricItem.textContent = metric;
+                    metricList.appendChild(metricItem);
+                });
+
+                metrics.appendChild(metricList);
                 container.appendChild(metrics);
             }
         }

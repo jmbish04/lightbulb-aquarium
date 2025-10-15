@@ -44,6 +44,36 @@
         </section>
 
         <section class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Best Practices</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Maintain reusable implementation guidance for future agents.</p>
+                </div>
+                <span id="memory-best-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
+            </div>
+            <div class="px-6 py-4 space-y-6">
+                <form id="best-practices-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <label class="flex flex-col text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Topic
+                        <input type="text" name="topic" required class="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" />
+                    </label>
+                    <label class="md:col-span-2 flex flex-col text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Guidance
+                        <textarea name="guidance" required rows="2" class="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"></textarea>
+                    </label>
+                    <label class="flex flex-col text-sm font-medium text-gray-700 dark:text-gray-200">
+                        Source
+                        <input type="text" name="source" class="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-2 text-sm text-gray-900 focus:border-purple-500 focus:ring-purple-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white" placeholder="URL or attribution" />
+                    </label>
+                    <div class="md:col-span-2 flex items-end">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 dark:bg-purple-500 dark:hover:bg-purple-600">Add Best Practice</button>
+                    </div>
+                </form>
+                <div id="best-practices-list" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Research Briefs</h2>
                 <span id="memory-research-count" class="text-sm text-gray-500 dark:text-gray-400"></span>
