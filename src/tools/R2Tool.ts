@@ -32,7 +32,7 @@ export class R2Tool {
         }
     }
 
-    async get(bucket_binding: string, key: string): Promise<R2ObjectBody | null> {
+    async get(bucket_binding: string, key: string): Promise<R2Object | null> {
         try {
             const obj = await this.getBucket(bucket_binding).get(key);
             if (!obj) return null;
