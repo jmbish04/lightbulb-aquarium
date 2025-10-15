@@ -1,0 +1,49 @@
+name = "lightbulb-aquarium-platform"
+main = "src/core/index.ts"
+compatibility_date = "2024-03-18"
+
+# Asset binding for the static frontend UI
+[[r2_buckets]]
+binding = "ASSETS"
+bucket_name = "lightbulb-aquarium-assets"
+
+# D1 Database for the entire platform
+[[d1_databases]]
+binding = "DB"
+database_name = "lightbulb-aquarium-db"
+database_id = "your-d1-database-id" # <-- REPLACE THIS
+
+# Durable Object bindings for each agent
+[[durable_objects.bindings]]
+name = "DYNAMIC_AGENT"
+class_name = "DynamicAgent"
+
+[[durable_objects.bindings]]
+name = "GITHUB_AGENT"
+class_name = "GitHubAgent"
+
+[[durable_objects.bindings]]
+name = "DEBUGGER_AGENT"
+class_name = "DebuggerAgent"
+
+[[durable_objects.bindings]]
+name = "BEST_PRACTICES_AGENT"
+class_name = "BestPracticesAgent"
+
+# Other necessary bindings
+[vars]
+# You must set these secrets using `npx wrangler secret put <KEY>`
+GITHUB_TOKEN = "your-github-token"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "MCP_LOGS" # Example, may not be used by all agents
+id = "your-mcp-logs-kv-id"
+preview_id = "your-mcp-logs-kv-preview-id"
+
+[[r2_buckets]]
+binding = "MCP_ARTIFACTS" # Example, may not be used by all agents
+bucket_name = "mcp-artifacts-bucket"
+preview_bucket_name = "preview-mcp-artifacts-bucket"
