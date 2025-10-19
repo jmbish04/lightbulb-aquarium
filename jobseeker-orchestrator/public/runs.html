@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jobseeker Orchestrator - All Runs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+    <script defer src="/assets/navbar.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-gray-900">Jobseeker Orchestrator</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-gray-900">New Run</a>
+                    <a href="/monitor.html" class="text-gray-600 hover:text-gray-900">Monitor</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">All Design Runs</h1>
+            <p class="mt-2 text-gray-600">View and manage all frontend design runs</p>
+        </div>
+
+        <!-- Error Container -->
+        <div id="errorContainer" class="hidden"></div>
+        
+        <!-- Success Container -->
+        <div id="successContainer" class="hidden"></div>
+        
+        <!-- Loading Container -->
+        <div id="loadingContainer" class="hidden"></div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="flex justify-center items-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span class="ml-3 text-gray-600">Loading runs...</span>
+        </div>
+
+        <!-- Runs List -->
+        <div id="runsList" class="hidden">
+            <div class="bg-white shadow overflow-hidden sm:rounded-md">
+                <ul id="runsContainer" class="divide-y divide-gray-200">
+                    <!-- Runs will be populated here -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">No runs yet</h3>
+            <p class="mt-1 text-sm text-gray-500">Get started by creating your first design run.</p>
+            <div class="mt-6">
+                <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    Start New Run
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/client.js"></script>
+    <script>
+        // Load runs on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRuns();
+        });
+
+        async function loadRuns() {
+            try {
+                Utils.showLoading('Loading runs...', 'loadingContainer');
+                
+                const response = await API.get('/evals');
+                const runs = response;
+                
+                document.getElementById('loadingState').classList.add('hidden');
+                Utils.hideLoading('loadingContainer');
+                
+                if (!Array.isArray(runs)) {
+                    throw new Error('Invalid response format from server');
+                }
+                
+                if (runs.length === 0) {
+                    document.getElementById('emptyState').classList.remove('hidden');
+                } else {
+                    document.getElementById('runsList').classList.remove('hidden');
+                    renderRuns(runs);
+                }
+            } catch (error) {
+                console.error('Error loading runs:', error);
+                document.getElementById('loadingState').classList.add('hidden');
+                Utils.hideLoading('loadingContainer');
+                
+                if (error instanceof APIError) {
+                    Utils.showError(error.message, error.details, 'errorContainer');
+                } else {
+                    Utils.showError('Failed to load runs. Please refresh the page to try again.', error.message, 'errorContainer');
+                }
+            }
+        }
+
+        function renderRuns(runs) {
+            const container = document.getElementById('runsContainer');
+            container.innerHTML = '';
+
+            runs.forEach(run => {
+                const runElement = createRunElement(run);
+                container.appendChild(runElement);
+            });
+        }
+
+        function createRunElement(run) {
+            const li = document.createElement('li');
+            
+            const statusColor = getStatusColor(run.status);
+            const statusText = getStatusText(run.status);
+            const createdAt = new Date(run.created_at).toLocaleString();
+            
+            li.innerHTML = `
+                <a href="/run.html?id=${run.id}" class="block hover:bg-gray-50">
+                    <div class="px-4 py-4 sm:px-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                        <svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="flex items-center">
+                                        <p class="text-sm font-medium text-gray-900">${run.project_id || run.id}</p>
+                                        <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor}">
+                                            ${statusText}
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Created ${createdAt}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            `;
+            
+            return li;
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'completed':
+                    return 'bg-green-100 text-green-800';
+                case 'running':
+                    return 'bg-blue-100 text-blue-800';
+                case 'error':
+                    return 'bg-red-100 text-red-800';
+                case 'queued':
+                    return 'bg-yellow-100 text-yellow-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'completed':
+                    return 'Completed';
+                case 'running':
+                    return 'Running';
+                case 'error':
+                    return 'Error';
+                case 'queued':
+                    return 'Queued';
+                default:
+                    return 'Unknown';
+            }
+        }
+
+        // Refresh button functionality
+        function refreshRuns() {
+            Utils.clearErrors('errorContainer');
+            Utils.clearErrors('successContainer');
+            loadRuns();
+        }
+
+        // Add refresh button to page
+        document.addEventListener('DOMContentLoaded', function() {
+            const header = document.querySelector('.mb-8');
+            const refreshButton = document.createElement('button');
+            refreshButton.textContent = 'Refresh';
+            refreshButton.className = 'ml-4 bg-gray-100 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2';
+            refreshButton.onclick = refreshRuns;
+            header.appendChild(refreshButton);
+        });
+    </script>
+</body>
+</html>

@@ -1,53 +1,21 @@
 import { DynamicAgent } from './DynamicAgent';
+import { D1Tool } from '../tools/D1Tool';
 import { GitHubAgent } from '../services/GitHubAgent';
 import { DebuggerAgent } from '../services/DebuggerAgent';
 import { BestPracticesAgent } from '../services/BestPracticesAgent';
-import { D1Tool } from '../tools/D1Tool';
-import { D1Database } from '@cloudflare/workers-types';
 
 export { DynamicAgent, GitHubAgent, DebuggerAgent, BestPracticesAgent };
 
 interface Env {
     DYNAMIC_AGENT: DurableObjectNamespace;
-    GITHUB_AGENT: DurableObjectNamespace;
-    DEBUGGER_AGENT: DurableObjectNamespace;
-    BEST_PRACTICES_AGENT: DurableObjectNamespace;
-    ASSETS: { fetch(request: Request): Promise<Response> };
-    DB: D1Database;
-}
-
-type SpecialistBinding = 'GITHUB_AGENT' | 'DEBUGGER_AGENT' | 'BEST_PRACTICES_AGENT';
-
-async function invokeSpecialistAgent(env: Env, bindingName: SpecialistBinding, tool: string, params: any) {
-    const namespace = env[bindingName];
-    if (!namespace || typeof namespace.get !== 'function') {
-        throw new Error(`Specialist agent binding not found: ${bindingName}`);
-    }
-    const id = namespace.newUniqueId();
-    const stub = namespace.get(id);
-    const request = new Request('https://specialist/invoke', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tool, params })
-    });
-    const response = await stub.fetch(request);
-    if (!response.ok) {
-        throw new Error(`Specialist agent returned ${response.status}: ${await response.text()}`);
-    }
-    return await response.json();
-}
-
-function jsonResponse(data: any, status: number = 200) {
-    return new Response(JSON.stringify(data), {
-        status,
-        headers: { 'Content-Type': 'application/json' }
-    });
+    // Other agent bindings will be used by the DynamicAgent
 }
 
 export default {
     async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
         const url = new URL(request.url);
 
+// API routes for specialist agents
         if (url.pathname.startsWith('/api/')) {
             try {
                 if (request.method === 'POST' && url.pathname === '/api/github/fork-plan') {
@@ -204,7 +172,7 @@ const d1 = new D1Tool({ DB: env.DB });
             return env.ASSETS.fetch(request);
         }
         if (url.pathname === '/openapi.json') {
-            return env.ASSETS.fetch(new Request(new URL('/public/openapi.json', request.url), request));
+             return env.ASSETS.fetch(new Request(new URL('/public/openapi.json', request.url), request));
         }
 
         // Route all other requests to the DynamicAgent
@@ -218,3 +186,24 @@ const d1 = new D1Tool({ DB: env.DB });
         }
     },
 };
+
+function jsonResponse(data: any, status = 200): Response {
+    return new Response(JSON.stringify(data), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+    });
+}
+
+async function invokeSpecialistAgent(env: any, agentBinding: string, method: string, payload: any): Promise<any> {
+    // Simple dynamic dispatch to Durable Object or service by binding name if available
+    // Placeholder: route through DynamicAgent for now
+    const id = env.DYNAMIC_AGENT.idFromName('singleton');
+    const stub = env.DYNAMIC_AGENT.get(id);
+    const res = await stub.fetch(new Request('https://internal.local/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent: agentBinding, method, payload }),
+    }));
+    if (!res.ok) throw new Error(`Agent call failed: ${res.status}`);
+    return res.json();
+}

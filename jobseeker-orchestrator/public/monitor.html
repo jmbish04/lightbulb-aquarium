@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jobseeker Orchestrator - Live Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="/assets/styles.css" />
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.5.1/flowbite.min.js"></script>
+    <script defer src="/assets/navbar.js"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <a href="/" class="text-xl font-bold text-gray-900">Jobseeker Orchestrator</a>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-gray-900">New Run</a>
+                    <a href="/runs.html" class="text-gray-600 hover:text-gray-900">All Runs</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Live Monitor</h1>
+            <p class="mt-2 text-gray-600">Real-time monitoring of design runs</p>
+        </div>
+
+        <!-- Error Container -->
+        <div id="errorContainer" class="hidden"></div>
+        
+        <!-- Success Container -->
+        <div id="successContainer" class="hidden"></div>
+        
+        <!-- Loading Container -->
+        <div id="loadingContainer" class="hidden"></div>
+
+        <!-- Connection Status -->
+        <div class="mb-6">
+            <div id="connectionStatus" class="flex items-center">
+                <div class="flex-shrink-0">
+                    <div id="connectionIndicator" class="h-3 w-3 rounded-full bg-gray-400"></div>
+                </div>
+                <div class="ml-3">
+                    <p id="connectionText" class="text-sm text-gray-600">Connecting...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Run Selector -->
+        <div class="bg-white shadow rounded-lg mb-6">
+            <div class="px-6 py-4">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Select Run to Monitor</h2>
+                <div class="flex space-x-4">
+                    <input 
+                        type="text" 
+                        id="runIdInput" 
+                        placeholder="Enter Run ID"
+                        class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                    <button 
+                        onclick="connectToRun()" 
+                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                        Connect
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Events -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-medium text-gray-900">Live Events</h2>
+                    <button 
+                        onclick="clearEvents()" 
+                        class="text-sm text-gray-500 hover:text-gray-700"
+                    >
+                        Clear
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="eventsContainer" class="space-y-4 max-h-96 overflow-y-auto">
+                    <div class="text-center text-gray-500 py-8">
+                        No events yet. Connect to a run to see live updates.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Status Grid -->
+        <div id="agentStatusGrid" class="hidden mt-8">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Agent Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                <span class="text-sm font-medium text-blue-600">O</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">OpenAI</p>
+                            <p id="openai-status" class="text-sm text-gray-500">Idle</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center">
+                                <span class="text-sm font-medium text-purple-600">A</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Anthropic</p>
+                            <p id="anthropic-status" class="text-sm text-gray-500">Idle</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white shadow rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
+                                <span class="text-sm font-medium text-green-600">G</span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-900">Google</p>
+                            <p id="google-status" class="text-sm text-gray-500">Idle</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/client.js"></script>
+    <script>
+        let ws = null;
+        let currentRunId = null;
+
+        function connectToRun() {
+            const runId = document.getElementById('runIdInput').value.trim();
+            if (!runId) {
+                Utils.showError('Please enter a Run ID', null, 'errorContainer');
+                return;
+            }
+
+            if (ws) {
+                ws.close();
+            }
+
+            currentRunId = runId;
+            connectWebSocket(runId);
+        }
+
+        function connectWebSocket(runId) {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/${runId}`;
+            
+            updateConnectionStatus('connecting', 'Connecting...');
+            Utils.clearErrors('errorContainer');
+            
+            try {
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = function(event) {
+                    updateConnectionStatus('connected', 'Connected');
+                    addEvent('system', 'Connected to run ' + runId);
+                    Utils.showSuccess('Successfully connected to monitoring service', 'successContainer');
+                };
+                
+                ws.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleEvent(data);
+                    } catch (error) {
+                        console.error('Error parsing WebSocket message:', error);
+                        addEvent('error', 'Error parsing message: ' + event.data);
+                        Utils.showError('Error processing live updates. Some features may not work correctly.', error.message, 'errorContainer');
+                    }
+                };
+                
+                ws.onclose = function(event) {
+                    updateConnectionStatus('disconnected', 'Disconnected');
+                    addEvent('system', 'Connection closed');
+                    
+                    if (event.code !== 1000) {
+                        Utils.showError('Connection lost. Please check your internet connection and try reconnecting.', `Code: ${event.code}, Reason: ${event.reason}`, 'errorContainer');
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    updateConnectionStatus('error', 'Connection error');
+                    addEvent('error', 'WebSocket error occurred');
+                    Utils.showError('Failed to connect to monitoring service. Please check your connection and try again.', error.message, 'errorContainer');
+                };
+                
+            } catch (error) {
+                updateConnectionStatus('error', 'Connection failed');
+                Utils.showError('WebSocket is not supported in this browser. Please use a modern browser.', error.message, 'errorContainer');
+            }
+        }
+
+        function handleEvent(event) {
+            switch (event.type) {
+                case 'welcome':
+                    addEvent('system', event.message);
+                    break;
+                case 'run:started':
+                    addEvent('run', `Run started: ${event.runId}`);
+                    break;
+                case 'agent:section:start':
+                    addEvent('agent', `Agent starting section: ${event.section}`);
+                    updateAgentStatus('working', event.section);
+                    break;
+                case 'agent:section:result':
+                    addEvent('agent', `Agent completed section: ${event.section} (${event.provider})`);
+                    updateAgentStatus('completed', event.section, event.provider);
+                    break;
+                case 'judge:start':
+                    addEvent('judge', 'Judge started evaluation');
+                    break;
+                case 'judge:section':
+                    addEvent('judge', `Judge selected winner for ${event.section}: ${event.winner}`);
+                    break;
+                case 'deliverable:saved':
+                    addEvent('deliverable', `Deliverable saved: ${event.section} (${event.r2Key})`);
+                    break;
+                case 'run:completed':
+                    addEvent('run', `Run completed: ${event.runId}`);
+                    updateConnectionStatus('completed', 'Run completed');
+                    Utils.showSuccess('Run completed successfully!', 'successContainer');
+                    break;
+                case 'run:error':
+                    addEvent('error', `Run error: ${event.error}`);
+                    updateConnectionStatus('error', 'Run error');
+                    Utils.showError(`Run encountered an error: ${event.error}`, null, 'errorContainer');
+                    break;
+                default:
+                    addEvent('unknown', `Unknown event: ${event.type}`);
+            }
+        }
+
+        function addEvent(type, message) {
+            const container = document.getElementById('eventsContainer');
+            
+            // Remove the "no events" message if it exists
+            const noEventsMsg = container.querySelector('.text-center.text-gray-500');
+            if (noEventsMsg) {
+                noEventsMsg.remove();
+            }
+            
+            const eventElement = document.createElement('div');
+            
+            const typeColors = {
+                'system': 'bg-blue-50 border-blue-200 text-blue-800',
+                'run': 'bg-green-50 border-green-200 text-green-800',
+                'agent': 'bg-purple-50 border-purple-200 text-purple-800',
+                'judge': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                'deliverable': 'bg-indigo-50 border-indigo-200 text-indigo-800',
+                'error': 'bg-red-50 border-red-200 text-red-800',
+                'unknown': 'bg-gray-50 border-gray-200 text-gray-800'
+            };
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            eventElement.innerHTML = `
+                <div class="border-l-4 ${typeColors[type] || typeColors.unknown} p-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium">${type.toUpperCase()}</span>
+                        <span class="text-xs text-gray-500">${timestamp}</span>
+                    </div>
+                    <p class="text-sm mt-1">${message}</p>
+                </div>
+            `;
+            
+            container.insertBefore(eventElement, container.firstChild);
+            
+            // Keep only last 50 events
+            while (container.children.length > 50) {
+                container.removeChild(container.lastChild);
+            }
+        }
+
+        function updateConnectionStatus(status, text) {
+            const indicator = document.getElementById('connectionIndicator');
+            const textElement = document.getElementById('connectionText');
+            
+            const statusColors = {
+                'connecting': 'bg-yellow-400',
+                'connected': 'bg-green-400',
+                'disconnected': 'bg-gray-400',
+                'error': 'bg-red-400',
+                'completed': 'bg-blue-400'
+            };
+            
+            indicator.className = `h-3 w-3 rounded-full ${statusColors[status] || statusColors.disconnected}`;
+            textElement.textContent = text;
+        }
+
+        function updateAgentStatus(status, section, provider) {
+            const agentStatusGrid = document.getElementById('agentStatusGrid');
+            agentStatusGrid.classList.remove('hidden');
+            
+            if (provider) {
+                const statusElement = document.getElementById(`${provider}-status`);
+                if (statusElement) {
+                    statusElement.textContent = status === 'working' ? `Working on ${section}` : 'Completed';
+                }
+            }
+        }
+
+        function clearEvents() {
+            const container = document.getElementById('eventsContainer');
+            container.innerHTML = '<div class="text-center text-gray-500 py-8">No events yet. Connect to a run to see live updates.</div>';
+        }
+
+        // Auto-connect if runId is in URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const runId = urlParams.get('id');
+            if (runId) {
+                document.getElementById('runIdInput').value = runId;
+                connectToRun();
+            }
+        });
+
+        // Handle page visibility changes to reconnect if needed
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && ws && ws.readyState === WebSocket.CLOSED) {
+                if (currentRunId) {
+                    Utils.showError('Connection lost. Attempting to reconnect...', null, 'errorContainer');
+                    connectWebSocket(currentRunId);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

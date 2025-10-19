@@ -58,48 +58,6 @@ export class D1Tool {
     }
 
     /**
-     * @description Inserts a record into the specified table. Column names are automatically
-     * derived from the provided data object and the values are bound safely using
-     * parameterised statements.
-     */
-    async insert(database_binding: string, table: string, data: Record<string, any>): Promise<D1Result> {
-        const columns = Object.keys(data);
-        const placeholders = columns.map(() => '?').join(', ');
-        const sql = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
-        const values = columns.map(column => data[column]);
-        return this.query(database_binding, sql, values);
-    }
-
-    /**
-     * @description Performs a partial update on a row identified by its primary key.
-     */
-    async update(database_binding: string, table: string, idColumn: string, id: string, data: Record<string, any>): Promise<D1Result> {
-        const columns = Object.keys(data);
-        const assignments = columns.map(column => `${column} = ?`).join(', ');
-        const sql = `UPDATE ${table} SET ${assignments} WHERE ${idColumn} = ?`;
-        const values = [...columns.map(column => data[column]), id];
-        return this.query(database_binding, sql, values);
-    }
-
-    /**
-     * @description Convenience helper for retrieving a list of rows.
-     */
-    async list(database_binding: string, table: string, limit: number = 50): Promise<any[]> {
-        const sql = `SELECT * FROM ${table} ORDER BY created_at DESC LIMIT ?`;
-        const { results } = await this.query(database_binding, sql, [limit]);
-        return results ?? [];
-    }
-
-    /**
-     * @description Retrieves a single row by ID.
-     */
-    async getById(database_binding: string, table: string, idColumn: string, id: string): Promise<any | null> {
-        const sql = `SELECT * FROM ${table} WHERE ${idColumn} = ? LIMIT 1`;
-        const { results } = await this.query(database_binding, sql, [id]);
-        return results && results.length > 0 ? results[0] : null;
-    }
-
-    /**
      * @description Applies the initial database schema. This is a powerful, one-time operation.
      * @param {string} database_binding - The name of the D1 binding.
      * @returns {Promise<any>} The result of the batch operation.
@@ -109,7 +67,6 @@ export class D1Tool {
         const schema = `
             CREATE TABLE best_practices ( id TEXT PRIMARY KEY, topic TEXT NOT NULL, guidance TEXT NOT NULL, source TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
             CREATE TABLE development_projects ( id TEXT PRIMARY KEY, name TEXT NOT NULL, description TEXT, github_url TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
-            CREATE TABLE development_project_plans ( id TEXT PRIMARY KEY, project_id TEXT NOT NULL, plan TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (project_id) REFERENCES development_projects(id) );
             CREATE TABLE development_consultations ( id TEXT PRIMARY KEY, project_id TEXT NOT NULL, question TEXT NOT NULL, context TEXT, agent_response TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, FOREIGN KEY (project_id) REFERENCES development_projects(id) );
             CREATE TABLE error_consultations ( id TEXT PRIMARY KEY, error_message TEXT NOT NULL, stack_trace TEXT, code_snippet TEXT, analysis TEXT, suggested_fix TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );
             CREATE TABLE research_briefs ( id TEXT PRIMARY KEY, topic TEXT NOT NULL, summary TEXT, status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP );

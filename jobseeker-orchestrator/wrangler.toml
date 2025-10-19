@@ -1,0 +1,52 @@
+name = "jobseeker-orchestrator"
+main = "src/index.ts"
+compatibility_date = "2025-10-13"
+
+[assets]
+directory = "./public/"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "jobseeker_orchestrator"
+database_id = "<D1_DATABASE_ID>"
+
+[[r2_buckets]]
+binding = "DELIVERABLES"
+bucket_name = "jobseeker-deliverables"
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "<KV_NAMESPACE_ID>"
+
+[[queues.producers]]
+binding = "EVALS_QUEUE"
+queue = "evals-queue"
+
+[[queues.consumers]]
+queue = "evals-queue"
+
+[durable_objects]
+bindings = [
+  { name = "RunHub", class_name = "RunHub" }
+]
+
+[[migrations]]
+tag = "v1"
+new_classes = ["RunHub"]
+
+[vars]
+DEFAULT_REPO   = "jmbish04/colby-recipe-frontend"
+ALLOWED_ORIGINS = "*"
+
+# Model defaults (can be overridden per run)
+OPENAI_MODEL    = "gpt-4o-mini"
+ANTHROPIC_MODEL = "claude-3-5-sonnet-20241022"
+GOOGLE_MODEL    = "gemini-1.5-pro"
+JUDGE_MODEL     = "gpt-4o-mini"
+
+# Secrets required (set with `wrangler secret put ...`):
+# GITHUB_TOKEN
+# OPENAI_API_KEY
+# ANTHROPIC_API_KEY
+# GOOGLE_API_KEY
