@@ -1,1 +1,69 @@
-<!DOCTYPE html><html><head><title>Research</title><script src="https://cdn.tailwindcss.com"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" /></head><body class="bg-gray-100 dark:bg-gray-800"><script src="/js/nav.js"></script><div class="container mx-auto p-4"><h1 class="text-2xl font-bold text-gray-900 dark:text-white">GitHub Research</h1></div><script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Research</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+    <script src="/js/nav.js"></script>
+    <main class="max-w-6xl mx-auto px-4 py-10 space-y-10">
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Kick off GitHub Research</h1>
+            <p class="mt-3 text-gray-600 dark:text-gray-300">Curate relevant repositories for an engineering topic and capture the brief for future agents.</p>
+        </header>
+
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Research Parameters</h2>
+            <form id="research-form" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="lg:col-span-2">
+                    <label for="topic" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">Research topic</label>
+                    <input type="text" id="topic" name="topic" required placeholder="Serverless feature flag platforms" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                </div>
+                <div>
+                    <label for="seedRepos" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">Seed repositories (comma separated)</label>
+                    <input type="text" id="seedRepos" name="seedRepos" placeholder="https://github.com/cloudflare/workers-sdk, https://github.com/vercel/next.js" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                </div>
+                <div>
+                    <label for="maxRepos" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">Maximum repositories</label>
+                    <input type="number" id="maxRepos" name="maxRepos" min="1" max="10" value="5" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                </div>
+                <div class="lg:col-span-2">
+                    <label for="tokenResearch" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-200">GitHub token (optional)</label>
+                    <input type="password" id="tokenResearch" name="token" placeholder="Override the worker secret for this call" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-3 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" />
+                </div>
+                <div class="lg:col-span-2 flex items-center justify-between">
+                    <div id="research-status" class="text-sm text-gray-500 dark:text-gray-400"></div>
+                    <button type="submit" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-4 focus:ring-purple-300 dark:bg-purple-500 dark:hover:bg-purple-600">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l3 3" /><circle cx="12" cy="12" r="9" /></svg>
+                        Start research
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section id="research-summary" class="hidden space-y-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700 p-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Executive Summary</h2>
+                <div id="research-overview" class="text-gray-700 dark:text-gray-200 space-y-3"></div>
+            </div>
+            <div class="grid gap-6 lg:grid-cols-2" id="research-repos"></div>
+        </section>
+
+        <section class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Past Research Briefs</h2>
+                <button id="research-history-button" type="button" class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-purple-600 border border-purple-200 rounded-lg hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:text-purple-300 dark:border-purple-500/60 dark:hover:bg-purple-900/40">
+                    View Past Research
+                </button>
+            </div>
+            <div id="research-history" class="divide-y divide-gray-200 dark:divide-gray-700"></div>
+        </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script src="/js/research.js"></script>
+</body>
+</html>
